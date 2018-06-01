@@ -1,5 +1,7 @@
 
 #20180601
+    https://github.com/alexgaoyh/webpack-vue-js
+
     use webpack and vue to generate a common js for script
     使用webpack，结合vue ,打包生成一个可供 script 引入的js文件，创建通用的组件功能
 
