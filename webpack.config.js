@@ -52,11 +52,11 @@ webpackConfig.externals = {
 }
 module.exports = [
     merge(webpackConfig, {
-        entry: path.resolve('./src/pap-el-input.js'),
+        entry: path.resolve('./src/pap-el-search-form.js'),
         output: {
-            filename: 'pap-el-input.min.js',
+            filename: 'pap-el-search-form.min.js',
             libraryTarget: 'window',
-            library: 'PapElInput',
+            library: 'PapElSearchForm',
         }
     })
 ]
