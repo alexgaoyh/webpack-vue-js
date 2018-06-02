@@ -34,12 +34,11 @@ let webpackConfig = {
       {
         test: /\.vue$/,
         loader: 'vue-loader'
-      }
-      /*,
+      },
       {
         test: /\.(eot|svg|ttf|woff|woff2)(\?\S*)?$/,
         loader: 'file-loader'
-      }*/
+      }
     ]
   }
 }
@@ -48,15 +47,16 @@ rimraf(path.join(__dirname, 'dist'), () => console.log('success remove'))
 
 webpackConfig.devtool = "#source-map"
 webpackConfig.externals = {
-    vue: 'vue'
+    vue: 'vue',
+    'element-ui': 'element-ui'
 }
 module.exports = [
     merge(webpackConfig, {
-        entry: path.resolve('./src/build.js'),
+        entry: path.resolve('./src/pap-el-input.js'),
         output: {
-            filename: 'vue-txt-number.min.js',
+            filename: 'pap-el-input.min.js',
             libraryTarget: 'window',
-            library: 'VueTxtNumber',
+            library: 'PapElInput',
         }
     })
 ]
