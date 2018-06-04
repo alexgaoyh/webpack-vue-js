@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<!-- 引入样式 -->
+<link rel="stylesheet"
+	href="https://cdn.bootcss.com/element-ui/2.0.6/theme-chalk/index.css">
+<style>
+    .v-select.searchable .dropdown-toggle {
+        width: 202px;
+        height: 40px;
+    }
+</style>
+</head>
+<body>
+	<div id="app">
+		<PapElSearchForm :inline="inline" :forms="forms"></PapElSearchForm>
+	</div>
+</body>
+<!-- 先引入 Vue -->
+<script src="https://cdn.bootcss.com/vue/2.5.9/vue.js"></script>
+<script src="js/pap-el-search-form.min.js"></script>
+<script>
+	Vue.use(window.PapElSearchForm)
+	new Vue({
+		el: '#app',
+		data: {
+			inline: true,
+			forms: [
+				{prop: 'name', label: '姓名', value: 'alexgaoyh', labelWidth: 10},
+				{prop: 'age', label: '年龄', value: '18', labelWidth: 100},
+				{type: 'select', prop: 'sex', label: '性别', placeholder: "性别",
+					disabled: false,
+					optionLabel: 'label', optionValue: 'value',
+					value: {
+						label:"女", 
+						value: "FEMAIL"
+					},
+					options: [
+						{label:"男", value: "MAIL"}, {label:"女", value: "FEMAIL"}
+					]
+				},
+				{prop: 'place', label: '占位符', value: '', placeholder: "我是占位符，itemWidth：240", itemWidth:240},
+				{type: 'text', prop: 'place', label: '占位符', value: '', placeholder: "type:text"},
+
+			]
+		}
+	})
+</script>
