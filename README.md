@@ -24,3 +24,18 @@
     		el: '#app'
     	})
     </script>
+
+#20180604
+    由于
+        https://github.com/ElemeFE/element/issues/6748
+        https://github.com/ElemeFE/element/issues/7096
+        https://github.com/ElemeFE/element/issues/8075
+
+    增加 https://sagalbot.github.io/vue-select 的支持， 解决select下拉框的使用问题
+    针对样式部分，可以约定
+    .v-select.searchable .dropdown-toggle {
+        width: 202px;
+        height: 40px;
+    }
+
+     注意当前的下拉框在使用的过程中，返回值是一个对象，并且是选中节点的所有的object值，不仅仅是value部分
