@@ -11,21 +11,21 @@
 			height: 40px;
 		}
 		.vdp-datepicker input {
-		    -webkit-appearance: none;
-		    background-color: #fff;
-		    border-radius: 4px;
-		    border: 1px solid #d8dce5;
-		    box-sizing: border-box;
-		    color: #5a5e66;
-		    display: inline-block;
-		    font-size: inherit;
-		    height: 40px;
-		    line-height: 1;
-		    outline: 0;
-		    padding: 0 15px;
-		    -webkit-transition: border-color .2s cubic-bezier(.645,.045,.355,1);
-		    transition: border-color .2s cubic-bezier(.645,.045,.355,1);
-		    width: 100%;
+			-webkit-appearance: none;
+			background-color: #fff;
+			border-radius: 4px;
+			border: 1px solid #d8dce5;
+			box-sizing: border-box;
+			color: #5a5e66;
+			display: inline-block;
+			font-size: inherit;
+			height: 40px;
+			line-height: 1;
+			outline: 0;
+			padding: 0 15px;
+			-webkit-transition: border-color .2s cubic-bezier(.645,.045,.355,1);
+			transition: border-color .2s cubic-bezier(.645,.045,.355,1);
+			width: 100%;
 		}
 	</style>
 </head>
@@ -44,9 +44,11 @@
         data: {
             inline: true,
             forms: [
-                {prop: 'name', label: '姓名', value: 'alexgaoyh', labelWidth: 10, placeholder: "我是占位符，itemWidth：240", itemWidth:240},
-                {type: 'text', prop: 'place', label: '占位符', value: '', placeholder: "type:text"},
-                {type: 'select', prop: 'sex', label: '性别', placeholder: "性别",
+                {prop: 'name', label: '姓名', value: 'alexgaoyh', placeholder: "我是占位符，itemWidth：240", itemWidth:240},
+                {type: 'text', prop: 'place', label: '占位符', value: '', placeholder: "type:text", itemWidth:240},
+                {type: 'number', prop: 'age', label: '年龄', value: '', placeholder: "type:number", itemWidth:240},
+                {type: 'number', prop: 'weight', label: '体重', numberKeyLength: 3, numberDecimalLength: 2, value: '', placeholder: "type:number", itemWidth:240},
+                {type: 'select', prop: 'sex', label: '性别', placeholder: "性别", itemWidth:202,
                     disabled: false,
                     optionLabel: 'label', optionValue: 'value',
                     value: {
@@ -56,8 +58,8 @@
                     options: [
                         {label:"男", value: "MAIL"}, {label:"女", value: "FEMAIL"}
                     ]
-               },
-               {type: 'date', prop: 'birthday', label: '出生日期', placeholder: "出生日期"}
+                },
+                {type: 'date', prop: 'birthday', label: '出生日期', placeholder: "出生日期"}
             ]
         }
     })

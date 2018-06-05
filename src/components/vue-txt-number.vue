@@ -1,8 +1,11 @@
 <template>
-  <input @keydown="keydown" @keyup="keyup" type="text" :value="value" @focus="focus" @blur="blur">
+  <el-input @keydown="keydown" @keyup="keyup" type="text" v-model="myValue" @blur="blur"></el-input>
 </template>
 <script>
+    import ElInput from "../../node_modules/element-ui/packages/input/src/input";
+
 export default {
+  components: {ElInput},
   name: 'vueTxtNumber',
   props: {
     value: '',
@@ -21,6 +24,7 @@ export default {
   },
   data () {
     return {
+      myValue: this.value,
       history: [this.value]
     }
   },
@@ -33,9 +37,6 @@ export default {
     blur (e) {
       this._truncateRuleValidation(e.target)
       this.$emit('input', e.target.value)
-    },
-    focus () {
-      this.$el.select()
     },
     keydown (e) {
       const newValue = e.target.value
@@ -166,7 +167,7 @@ export default {
       const dotIndex = target.value.indexOf('.')
       if (dotIndex !== -1) {
         let decimalStr = target.value.split('.')[1]
-        if (this.decimalLength === 0 || decimalStr.length > this.decimalLengt) {
+        if (this.decimalLength === 0 || decimalStr.length > this.decimalLength) {
           this._truncateText(target)
           return
         }
