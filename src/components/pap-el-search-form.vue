@@ -51,7 +51,7 @@
             },
             inline: {
                 type: Boolean,
-                default: false
+                default: true
             },
             itemWidth: Number,
             submitHandler: Function,
