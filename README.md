@@ -39,3 +39,6 @@
     }
 
      注意当前的下拉框在使用的过程中，返回值是一个对象，并且是选中节点的所有的object值，不仅仅是value部分
+
+#20180605
+    日期选择框的处理  https://github.com/charliekassel/vuejs-datepicker

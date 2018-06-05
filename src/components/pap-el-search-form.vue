@@ -10,7 +10,7 @@
                       :disabled="form.disabled"
                       :placeholder="form.placeholder"
                       :style="itemStyle + (form.itemWidth ? `width: ${form.itemWidth}px;` : '')" ></el-input>
-·            <v-select v-if="form.type == 'select'" v-model="form.value"
+            <v-select v-if="form.type == 'select'" v-model="form.value"
                        :size="form.size ? form.size : size" :options="form.options"
                        :label="form.optionLabel" :value="form.optionValue"
                        :readonly="form.readonly"
@@ -18,6 +18,14 @@
                        :placeholder="form.placeholder"
                        :style="itemStyle + (form.itemWidth ? `width: ${form.itemWidth}px;` : '')" >
             </v-select>
+            <datepicker  v-if="form.type == 'date'" v-model="form.value"
+                         :language="dateLanguage" :format="dateFormat"
+                         :size="form.size ? form.size : size" :options="form.options"
+                         :label="form.optionLabel" :value="form.optionValue"
+                         :readonly="form.readonly"
+                         :disabled="form.disabled"
+                         :placeholder="form.placeholder"
+                         :style="itemStyle + (form.itemWidth ? `width: ${form.itemWidth}px;` : '')" ></datepicker>
         </el-form-item>
     </el-form>
 </template>
@@ -26,9 +34,11 @@
     import ElFormItem from "../../node_modules/element-ui/packages/form/src/form-item";
     import ElInput from "../../node_modules/element-ui/packages/input/src/input";
     import vSelect from 'vue-select'
+    import Datepicker from 'vuejs-datepicker';
+    import {zh} from 'vuejs-datepicker/dist/locale'
 
     export default {
-        components: { vSelect, ElInput, ElFormItem, ElForm},
+        components: { vSelect, Datepicker, ElInput, ElFormItem, ElForm},
         name: 'papelsearchform',
         props: {
             size: {
@@ -64,6 +74,8 @@
         },
         data () {
             return{
+                dateLanguage: zh,
+                dateFormat: 'yyyy-MM-dd'
             }
         },
         computed: {
