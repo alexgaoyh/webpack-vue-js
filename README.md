@@ -42,3 +42,10 @@
 
 #20180605
     日期选择框的处理  https://github.com/charliekassel/vuejs-datepicker
+
+#20180611
+    Vue的插件集合 https://github.com/vuejs/awesome-vue#components--libraries
+
+    数字输入框的控制
+        https://github.com/kevinongko/vue-numeric
+
