@@ -49,3 +49,9 @@
     数字输入框的控制
         https://github.com/kevinongko/vue-numeric
 
+#20180612
+    弹窗
+        https://github.com/euvl/vue-js-modal
+        http://vue-js-modal.yev.io/
+
+
