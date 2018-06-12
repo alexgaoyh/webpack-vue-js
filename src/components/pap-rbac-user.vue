@@ -10,6 +10,24 @@
             </el-button>
         </div>
 
+        <v-table
+                columns-width-drag is-horizontal-resize
+                style="width:100%"
+                :is-loading="isLoading" :columns="columns"
+                :table-data="tableData"
+                :show-vertical-border="false" row-hover-color="#eee" row-click-color="#edf7ff"
+                :select-all="selectALL"
+                :select-change="selectChange"
+                :select-group-change="selectGroupChange"
+        ></v-table>
+
+        <div class="mt20 mb20 bold">
+            <v-pagination @page-change="pageChange" @page-size-change="pageSizeChange"
+                          :total="listQuery.total" :page-size="pageSize" :pageSizeOption="pageSizeOption"
+                          :layout="['total', 'prev', 'pager', 'next', 'sizer', 'jumper']">
+            </v-pagination>
+        </div>
+
         <modal name="userModal" :height="400">
             <el-form class="pap-rbac-user-modal small-space" :model="temp"  label-position="left" label-width="70px">
                 <el-input type="hidden" v-model="temp.id"></el-input>
@@ -44,9 +62,16 @@
     import Qs from 'qs'
     import {post} from '../util/http';
     Vue.prototype.$post = post;
+    // 引入样式
+    import 'vue-easytable/libs/themes-base/index.css'
+    // 导入 table 和 分页组件
+    import {VTable,VPagination} from 'vue-easytable'
+    import mixins from './base/mixins.vue'
+
 
     export default {
-        components: {ElFormItem, ElForm, ElButton, ElInput},
+        components: {ElFormItem, ElForm, ElButton, ElInput, VTable, VPagination},
+        mixins: [mixins],
         name: 'paprbacuser',
         props: {
             baseUrl: {
@@ -59,18 +84,50 @@
                 listQuery: {
                     page: 1,
                     rows: 10,
-                    name: ''
+                    name: '',
+                    total: 1
                 },
                 dialogReadType: false,
                 temp: {
 
-                }
+                },
+                isLoading: false,
+                tableData: [
+                    {name:'赵伟',tel:'156*****1987',hobby:'钢琴、书法、唱歌',address:'上海市黄浦区金陵东路569号17楼'}
+                ],
+                columns: [
+                    {width: 30, titleAlign: 'center',columnAlign:'center',type: 'selection',isResize:true},
+                    {field: 'name', title:'姓名', width: 50, titleAlign: 'center',columnAlign:'center',isResize:true},
+                    {field: 'tel', title: '手机号码', width: 100, titleAlign: 'center',columnAlign:'center',isResize:true},
+                    {field: 'hobby', title: '爱好', width: 230, titleAlign: 'center',columnAlign:'center',isResize:true},
+                    {field: 'address', title: '地址', width: 308, titleAlign: 'center',columnAlign:'left'}
+                ]
+
             }
         },
         created () {
             this.getList()
         },
         methods: {
+            selectALL(selection){
+                console.log('select-aLL',selection);
+            },
+            selectChange(selection,rowData){
+                console.log('select-change',selection, rowData);
+            },
+            selectGroupChange(selection){
+                console.log('select-group-change',selection);
+            },
+            pageChange(pageIndex){
+                this.pageIndex = pageIndex;
+                this.getTableData();
+                console.log(pageIndex)
+            },
+            pageSizeChange(pageSize){
+                this.pageIndex = 1;
+                this.pageSize = pageSize;
+                this.getTableData();
+            },
             // 顶部的统一搜索处理
             handleFilter () {
                 this.getList()
@@ -104,3 +161,13 @@
         }
     }
 </script>
+<style scoped="scoped">
+    .title-cell-class-name-test1 {
+        background-color: #2db7f5;
+        color:#fff;
+    }
+    .title-cell-class-name-test2 {
+        background-color: #f60;
+        color:#fff;
+    }
+</style>

@@ -54,4 +54,8 @@
         https://github.com/euvl/vue-js-modal
         http://vue-js-modal.yev.io/
 
+    表格
+        https://github.com/huangshuwei/vue-easytable
+        http://doc.huangsw.com/vue-easytable/app.html#/intro
+
 
