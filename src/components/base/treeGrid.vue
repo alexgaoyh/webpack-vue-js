@@ -324,6 +324,14 @@
                         this.checkGroup.push(data.id);
                         for (let i=0; i<arr.length; i++){
                             this.checkGroup.push(arr[i].id)
+                            // 第三层 begin
+                            var thirdCheckedArray = arr[i].children;
+                            if(thirdCheckedArray) {
+                                for (let thirdCheckedLet=0; thirdCheckedLet<thirdCheckedArray.length; thirdCheckedLet++){
+                                    this.checkGroup.push(arr[i].children[thirdCheckedLet].id)
+                                }
+                            }
+                            // 第三层 end
                         }
                     }else {
                         for (var i=0; i<this.checkGroup.length; i++){
@@ -333,6 +341,16 @@
                             for (var j=0; j<arr.length; j++){
                                 if(this.checkGroup[i] == arr[j].id){
                                     this.checkGroup.splice(i,1);
+                                    // 第三层 begin
+                                    var thirdNoCheckArray = arr[j].children;
+                                    if(thirdNoCheckArray) {
+                                        for (let thirdNoCheckLet=0; thirdNoCheckLet<thirdNoCheckArray.length; thirdNoCheckLet++){
+                                            if(this.checkGroup[i] === thirdNoCheckArray[thirdNoCheckLet].id){
+                                                this.checkGroup.splice(i, 1)
+                                            }
+                                        }
+                                    }
+                                    // 第三层 end
                                 }
                             }
                         }
