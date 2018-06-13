@@ -329,6 +329,14 @@
                             if(thirdCheckedArray) {
                                 for (let thirdCheckedLet=0; thirdCheckedLet<thirdCheckedArray.length; thirdCheckedLet++){
                                     this.checkGroup.push(arr[i].children[thirdCheckedLet].id)
+                                    // 第四层 begin
+                                    var fourCheckedArray = arr[i].children[thirdCheckedLet].children;
+                                    if(fourCheckedArray) {
+                                        for (let fourCheckedLet=0; fourCheckedLet<fourCheckedArray.length; fourCheckedLet++){
+                                            this.checkGroup.push(arr[i].children[thirdCheckedLet].children[fourCheckedLet].id)
+                                        }
+                                    }
+                                    // 第四层 end
                                 }
                             }
                             // 第三层 end
@@ -347,6 +355,16 @@
                                         for (let thirdNoCheckLet=0; thirdNoCheckLet<thirdNoCheckArray.length; thirdNoCheckLet++){
                                             if(this.checkGroup[i] === thirdNoCheckArray[thirdNoCheckLet].id){
                                                 this.checkGroup.splice(i, 1)
+                                                // 第四层 begin
+                                                var fourNoCheckArray = thirdNoCheckArray[thirdNoCheckLet].children;
+                                                if(fourNoCheckArray) {
+                                                    for (let fourNoCheckLet=0; fourNoCheckLet<fourNoCheckArray.length; fourNoCheckLet++){
+                                                        if(this.checkGroup[i] === fourNoCheckArray[fourNoCheckLet].id){
+                                                            this.checkGroup.splice(i, 1)
+                                                        }
+                                                    }
+                                                }
+                                                // 第四层 end
                                             }
                                         }
                                     }
