@@ -1,31 +1,31 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<!-- 引入样式 -->
-<link rel="stylesheet"
-	href="https://cdn.bootcss.com/element-ui/2.0.6/theme-chalk/index.css">
+	<meta charset="UTF-8">
+	<!-- 引入样式 -->
+	<link rel="stylesheet"
+		  href="https://cdn.bootcss.com/element-ui/2.0.6/theme-chalk/index.css">
 </head>
 <body>
-	<div id="app">
-		<tree-grid
-            :items='data'
-            :columns='columns'
-            @on-row-click='rowClick'
-            @on-selection-change='selectionClick'
-            @on-sort-change='sortClick'
-    ></tree-grid>
-	</div>
+<div id="app">
+	<tree-grid
+			:items='data'
+			:columns='columns'
+			@on-row-click='rowClick'
+			@on-selection-change='selectionClick'
+			@on-sort-change='sortClick'
+	></tree-grid>
+</div>
 </body>
 <!-- 先引入 Vue -->
 <script src="https://cdn.bootcss.com/vue/2.5.9/vue.js"></script>
 <script src="../js/app/rbac/pap-tree-grid.min.js"></script>
 <script>
-	Vue.use(window.PapTreeGrid)
-	new Vue({
-		el: '#app',
-		data: {
-			columns: [{
+    Vue.use(window.PapTreeGrid)
+    new Vue({
+        el: '#app',
+        data: {
+            columns: [{
                 type: 'selection',
                 width: '50',
             }, {
@@ -80,35 +80,35 @@
                     remark: '测试数据测试数据',
                     level: 1,
                     children: [{
-	                    id: '011',
-	                    code: '000211',
-	                    name: '测试数据01',
-	                    status: '启用',
-	                    remark: '测试数据测试数据',
-	                    level: 2,
-	                    children: [{
-		                    id: '0111',
-		                    code: '0002111',
-		                    name: '测试数据01',
-		                    status: '启用',
-		                    remark: '测试数据测试数据',
-		                    level: 2
-		                }, {
-		                    id: '0122',
-		                    code: '0002122',
-		                    name: '测试数据02',
-		                    status: '启用',
-		                    remark: '测试数据测试数据',
-		                    level: 2
-		                }]
-	                }, {
-	                    id: '012',
-	                    code: '000212',
-	                    name: '测试数据02',
-	                    status: '启用',
-	                    remark: '测试数据测试数据',
-	                    level: 2
-	                }]
+                        id: '011',
+                        code: '000211',
+                        name: '测试数据01',
+                        status: '启用',
+                        remark: '测试数据测试数据',
+                        level: 2,
+                        children: [{
+                            id: '0111',
+                            code: '0002111',
+                            name: '测试数据01',
+                            status: '启用',
+                            remark: '测试数据测试数据',
+                            level: 2
+                        }, {
+                            id: '0122',
+                            code: '0002122',
+                            name: '测试数据02',
+                            status: '启用',
+                            remark: '测试数据测试数据',
+                            level: 2
+                        }]
+                    }, {
+                        id: '012',
+                        code: '000212',
+                        name: '测试数据02',
+                        status: '启用',
+                        remark: '测试数据测试数据',
+                        level: 2
+                    }]
                 }, {
                     id: '02',
                     code: '00002',
@@ -132,12 +132,14 @@
                 level: 0,
                 remark: '测试数据测试数据'
             }]
-		},
-		methods: {
-            rowClick(data, index, event) {
+        },
+        methods: {
+            // 行 操作按钮的处理
+            rowClick(data, event, index, text) {
                 console.log('当前行数据:' + data)
-                console.log('点击行号:' + index)
                 console.log('点击事件:' + event)
+                console.log('点击行号:' + index)
+                console.log('点击文本:' + text)
             },
             selectionClick(arr) {
                 console.log('选中数据id数组:' + arr)
@@ -147,5 +149,5 @@
                 console.log('排序规则:' + type)
             }
         }
-	})
+    })
 </script>
