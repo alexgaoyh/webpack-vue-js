@@ -5,17 +5,19 @@
             <el-input @keyup.enter.native="handleFilter" style="width: 200px;" class="filter-item" placeholder="用户名称" v-model="listQuery.name" ></el-input>
             <el-button class="filter-item" style="margin-left: 10px;"type="primary" icon="edit" @click="handleFilter">搜索</el-button>
             <el-button class="filter-item" style="margin-left: 10px;"type="primary" icon="search" @click="handleAdd">添加</el-button>
+            <el-button class="filter-item" style="margin-left: 10px;"type="primary" icon="search" @click="handleUpdate">修改</el-button>
+            <el-button class="filter-item" style="margin-left: 10px;"type="primary" icon="search" @click="handleDelete">删除</el-button>
             <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="edit" @click="handleRoleEdit">
                 角色配置
             </el-button>
         </div>
 
         <v-table
-                columns-width-drag is-horizontal-resize
+                columns-width-drag is-horizontal-resize is-vertical-resize
                 style="width:100%"
                 :is-loading="isLoading" :columns="columns"
                 :table-data="tableData"
-                :show-vertical-border="false" row-hover-color="#eee" row-click-color="#edf7ff"
+                row-hover-color="#eee" row-click-color="#edf7ff"
                 :select-all="selectALL"
                 :select-change="selectChange"
                 :select-group-change="selectGroupChange"
@@ -23,7 +25,7 @@
 
         <div class="mt20 mb20 bold">
             <v-pagination @page-change="pageChange" @page-size-change="pageSizeChange"
-                          :total="listQuery.total" :page-size="pageSize" :pageSizeOption="pageSizeOption"
+                          :total="listQuery.total" :page-size="papPageSize" :pageSizeOption="papPageSizeOption"
                           :layout="['total', 'prev', 'pager', 'next', 'sizer', 'jumper']">
             </v-pagination>
         </div>
@@ -85,7 +87,7 @@
                     page: 1,
                     rows: 10,
                     name: '',
-                    total: 1
+                    total: 0
                 },
                 dialogReadType: false,
                 temp: {
@@ -93,47 +95,65 @@
                 },
                 isLoading: false,
                 tableData: [
-                    {name:'赵伟',tel:'156*****1987',hobby:'钢琴、书法、唱歌',address:'上海市黄浦区金陵东路569号17楼'}
                 ],
+                // 表格选中的值
+                tableSelectedData: [],
                 columns: [
                     {width: 30, titleAlign: 'center',columnAlign:'center',type: 'selection',isResize:true},
-                    {field: 'name', title:'姓名', width: 50, titleAlign: 'center',columnAlign:'center',isResize:true},
-                    {field: 'tel', title: '手机号码', width: 100, titleAlign: 'center',columnAlign:'center',isResize:true},
-                    {field: 'hobby', title: '爱好', width: 230, titleAlign: 'center',columnAlign:'center',isResize:true},
-                    {field: 'address', title: '地址', width: 308, titleAlign: 'center',columnAlign:'left'}
+                    {field: 'code', title:'用户编码', width: 100, titleAlign: 'center',columnAlign:'center',isResize:true},
+                    {field: 'name', title:'姓名', width: 300, titleAlign: 'center',columnAlign:'center',isResize:true},
+                    {field: 'mobile', title: '手机号码', width: 300, titleAlign: 'center',columnAlign:'center'}
                 ]
 
             }
         },
         created () {
+            // 分页框页面通用
+            this.listQuery.rows = this.papPageSize
             this.getList()
         },
         methods: {
-            selectALL(selection){
-                console.log('select-aLL',selection);
-            },
-            selectChange(selection,rowData){
-                console.log('select-change',selection, rowData);
-            },
-            selectGroupChange(selection){
-                console.log('select-group-change',selection);
-            },
-            pageChange(pageIndex){
-                this.pageIndex = pageIndex;
-                this.getTableData();
-                console.log(pageIndex)
-            },
-            pageSizeChange(pageSize){
-                this.pageIndex = 1;
-                this.pageSize = pageSize;
-                this.getTableData();
-            },
-            // 顶部的统一搜索处理
-            handleFilter () {
-                this.getList()
-            },
             handleAdd () {
+                this.temp = {};
                 this.$modal.show('userModal');
+            },
+            handleUpdate () {
+                var _this = this;
+                if(this.tableSelectedData && this.tableSelectedData.length !== 1) {
+                    alert('请选择一条记录进行操作!');
+                } else {
+                    this.$post(this.baseUrl + '/v1/rbac/user/' + this.tableSelectedData[0].id, {}).then((response) => {
+                        // 这里是处理正确的回调
+                        console.log(response)
+                        if(response.code === '200') {
+                            _this.temp = response.data;
+                            this.$modal.show('userModal');
+                        }
+                    }).catch(err => {
+                        console.log(err)
+                        _this.$message.error(err)
+                    })
+                }
+            },
+            handleDelete () {
+                var _this = this;
+                if(this.tableSelectedData && this.tableSelectedData.length !== 1) {
+                    alert('请选择一条记录进行操作!');
+                } else {
+                    var formData = {
+                        deleteJSON: JSON.stringify(this.tableSelectedData[0])
+                    }
+                    this.$post(this.baseUrl + '/v1/rbac/user/delete', Qs.stringify(formData)).then((response) => {
+                        // 这里是处理正确的回调
+                        console.log(response)
+                        if(response.code === '200') {
+                            _this.getList()
+                        }
+                    }).catch(err => {
+                        console.log(err)
+                        _this.$message.error(err)
+                    })
+                }
             },
             handleRoleEdit () {
                 
@@ -147,21 +167,59 @@
                 this.$post(this.baseUrl + '/v1/rbac/user/querypage', Qs.stringify(formData)).then((response) => {
                     // 这里是处理正确的回调
                     console.log(response)
+                    if(response.code === '200') {
+                        _this.tableData = response.list
+                        _this.listQuery.total = response.page.total
+                    }
                 }).catch(err => {
                     console.log(err)
-                    _this.$message.error(err)
+                    alert(err)
                 })
             },
             closeUserAdd () {
                 this.$modal.hide('userModal');
             },
             userModalSaveOrUpdate () {
-
+                var _this = this;
+                if(this.temp && this.temp.id != undefined && this.temp.id != '') {
+                    var updateFormData = {
+                        updateJSON: JSON.stringify(this.temp)
+                    }
+                    this.$post(this.baseUrl + '/v1/rbac/user/update', Qs.stringify(updateFormData)).then((response) => {
+                        // 这里是处理正确的回调
+                        console.log(response)
+                        if(response.code === '200') {
+                            _this.$modal.hide('userModal');
+                            _this.getList()
+                        }
+                    }).catch(err => {
+                        console.log(err)
+                        alert(err)
+                    })
+                } else {
+                    var addFormData = {
+                        addJSON: JSON.stringify(this.temp)
+                    }
+                    this.$post(this.baseUrl + '/v1/rbac/user/add', Qs.stringify(addFormData)).then((response) => {
+                        // 这里是处理正确的回调
+                        console.log(response)
+                        if(response.code === '200') {
+                            _this.$modal.hide('userModal');
+                            _this.getList()
+                        }
+                    }).catch(err => {
+                        console.log(err)
+                        alert(err)
+                    })
+                }
             }
         }
     }
 </script>
 <style scoped="scoped">
+    .v-table-views {
+        height: 500px;
+    }
     .title-cell-class-name-test1 {
         background-color: #2db7f5;
         color:#fff;

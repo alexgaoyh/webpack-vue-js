@@ -9,8 +9,8 @@
     export default {
         data () {
             return {
-                pageSize: 30,
-                pageSizeOption: [10, 20, 30, 50, 100],
+                papPageSize: 30,
+                papPageSizeOption: [10, 20, 30, 50, 100],
             }
         },
         created () {
@@ -20,6 +20,32 @@
             }
         },
         methods: {
+            selectALL(selection){
+                console.log('select-aLL',selection);
+                this.tableSelectedData = selection;
+            },
+            selectChange(selection,rowData){
+                console.log('select-change',selection, rowData);
+                this.tableSelectedData = selection;
+            },
+            selectGroupChange(selection){
+                console.log('select-group-change',selection);
+                this.tableSelectedData = selection;
+            },
+            pageChange(pageIndex){
+                this.listQuery.page = pageIndex;
+                this.getList();
+                console.log(pageIndex)
+            },
+            pageSizeChange(pageSize){
+                this.listQuery.page = 1;
+                this.listQuery.rows = pageSize;
+                this.getList();
+            },
+            // 顶部的统一搜索处理
+            handleFilter () {
+                this.getList()
+            },
             _baseVueInitListQuery () {
             },
             isEmptyObject (obj) {
