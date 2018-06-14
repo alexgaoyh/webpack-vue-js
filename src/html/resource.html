@@ -37,10 +37,25 @@
 	          <el-input placeholder="请输入内容" v-model="temp.name" v-bind:readonly="dialogTitle=='信息查看'">
 	          </el-input>
 	        </el-form-item>
-	        <el-form-item label="上级角色">
-	          <el-cascader v-model="parentRoleArrayTemp" placeholder="请选择" :options="data"
+            <el-form-item label="类型">
+            	<el-radio v-for="item in typeFlagOptions" v-model="temp.typeFlag" :label="item.label">{{item.text}}</el-radio>
+	        </el-form-item>
+	        <el-form-item label="链接">
+				<el-input placeholder="请输入内容" v-model="temp.href" v-bind:readonly="dialogTitle=='信息查看'">
+				</el-input>
+	        </el-form-item>
+			<el-form-item label="排序号">
+				<el-input placeholder="请输入内容" v-model="temp.orderNo" v-bind:readonly="dialogTitle=='信息查看'">
+				</el-input>
+			</el-form-item>
+			<el-form-item label="图标">
+				<el-input placeholder="请输入内容" v-model="temp.icon" v-bind:readonly="dialogTitle=='信息查看'">
+				</el-input>
+			</el-form-item>
+	        <el-form-item label="上级资源">
+	          <el-cascader v-model="parentResourceArrayTemp" placeholder="请选择" :options="data"
 	                       filterable clearable change-on-select style="width: 511.5px"
-	                       :props="papbusRolecascaderprops" v-bind:readonly="dialogTitle=='信息查看'"></el-cascader>
+	                       :props="papbusResourcecascaderprops" v-bind:readonly="dialogTitle=='信息查看'"></el-cascader>
 	        </el-form-item>
 	        <el-form-item label="备注">
 	          <el-input placeholder="请输入内容" v-model="temp.remark" v-bind:readonly="dialogTitle=='信息查看'">
@@ -69,11 +84,18 @@
 			dialogTitle: '',
 			dialogFormVisible: false,
 			temp: {},
-			parentRoleArrayTemp: [],
-	        papbusRolecascaderprops: {
+			parentResourceArrayTemp: [],
+	        papbusResourcecascaderprops: {
 	          value: 'id',
 	          label: 'name'
 	        },
+	        typeFlagOptions: [{
+	        	label: 'MENU',
+	        	text: '菜单'
+	        }, {
+	        	label: 'BUTTON',
+	        	text: '按钮'
+	        }],
 			columns: [{
                 type: 'selection',
                 width: '50',
@@ -130,22 +152,22 @@
                 console.log('排序规则:' + type)
             },
             handleAdd() {
-            	this.parentRoleArrayTemp = [];
+            	this.parentResourceArrayTemp = [];
             	this.temp = {};
             	this.dialogFormVisible = true;
             },
             handleUpdate(data) {
             	this.temp = data;
             	if (data.pathIds !== undefined && data.pathIds !== null && data.pathIds !== '') {
-					this.parentRoleArrayTemp = data.pathIds.split(',')
+					this.parentResourceArrayTemp = data.pathIds.split(',')
 				} else {
-					this.parentRoleArrayTemp = []
+					this.parentResourceArrayTemp = []
 				}
 				this.dialogFormVisible = true;
             },
             handleDelete(deleteId) {
             	var _this = this;
-    			axios.post(_this.baseUrl + '/v1/rbac/role/delete',"deleteJSON="+ JSON.stringify({id: deleteId}),{
+    			axios.post(_this.baseUrl + '/v1/rbac/resource/delete',"deleteJSON="+ JSON.stringify({id: deleteId}),{
 			        headers: {
 			        	'Content-Type': 'application/x-www-form-urlencoded'
 			        }
@@ -165,7 +187,7 @@
             },
             getList() {
             	var _this = this;
-            	axios.get(_this.baseUrl + '/v1/rbac/role/treejson')
+            	axios.get(_this.baseUrl + '/v1/rbac/resource/treejson')
 				.then(function(res){
 				  console.log(res);
 				  _this.data = res.data;
@@ -176,18 +198,18 @@
             },
             dialogSaveOrUpdateClick() {
             	var _this = this;
-            	console.log(this.parentRoleArrayTemp);
+            	console.log(this.parentResourceArrayTemp);
             	console.log(this.temp);
-        		if (this.parentRoleArrayTemp) {
-		          if (this.parentRoleArrayTemp.length > 0) {
-		           this.temp.parentId = this.parentRoleArrayTemp[this.parentRoleArrayTemp.length - 1]
-		          } else if (this.parentRoleArrayTemp.length === 0) {
+        		if (this.parentResourceArrayTemp) {
+		          if (this.parentResourceArrayTemp.length > 0) {
+		           this.temp.parentId = this.parentResourceArrayTemp[this.parentResourceArrayTemp.length - 1]
+		          } else if (this.parentResourceArrayTemp.length === 0) {
 		            this.temp.parentId = '-1'
 		          }
 		        }
         		
         		if(this.temp.id == undefined || this.temp.id == '') {
-        			axios.post(_this.baseUrl + '/v1/rbac/role/add',"addJSON="+ JSON.stringify(_this.temp),{
+        			axios.post(_this.baseUrl + '/v1/rbac/resource/add',"addJSON="+ JSON.stringify(_this.temp),{
 				        headers: {
 				        	'Content-Type': 'application/x-www-form-urlencoded'
 				        }
@@ -206,7 +228,7 @@
 					  console.log(err);
 					});
         		} else {
-        			axios.post(_this.baseUrl + '/v1/rbac/role/update',"updateJSON="+ JSON.stringify(_this.temp),{
+        			axios.post(_this.baseUrl + '/v1/rbac/resource/update',"updateJSON="+ JSON.stringify(_this.temp),{
 				        headers: {
 				        	'Content-Type': 'application/x-www-form-urlencoded'
 				        }
