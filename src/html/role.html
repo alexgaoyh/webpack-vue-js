@@ -52,6 +52,17 @@
 	        <el-button type="primary" @click="dialogSaveOrUpdateClick()">保存</el-button>
 	      </div>
 	    </el-dialog>
+	    
+	    <!--维护资源 -->
+	    <el-dialog :title="dialogUserResourceTitle" :visible.sync="dialogUserResourceFormVisible">
+			<el-tree :data="dataResourceDatas" show-checkbox node-key="id" :default-expanded-keys="userResourceKeysArray"
+			       :default-checked-keys="userResourceKeysArray" ref="userResourceTree" highlight-current
+			:props="userResourceTreeProps"></el-tree>
+			<div slot="footer" class="dialog-footer">
+				<el-button @click="dialogUserResourceFormVisible = false">取 消</el-button>
+				<el-button type="primary" @click="dialogUpdateRoleResourceClick()">确 定</el-button>
+			</div>
+		</el-dialog>
 	</div>
 </body>
 <!-- 先引入 Vue -->
@@ -74,6 +85,17 @@
 	          value: 'id',
 	          label: 'name'
 	        },
+	        dataResourceDatas: [],
+	        userResourceKeysArray: [],
+	        selectedRoleId: '',
+	        dialogUserResourceTitle: '角色资源维护',
+	        dialogUserResourceFormVisible: false,
+            userResourceTreeProps: {
+				children: 'children',
+				label: 'name'
+		    },
+		    // 当前树形表格，选中的值
+		    treeGridSelectedArray: [],
 			columns: [{
                 type: 'selection',
                 width: '50',
@@ -99,6 +121,9 @@
                 }, {
                     type: 'error',
                     text: '删除'
+                }, {
+                    type: 'role',
+                    text: '资源维护'
                 }],
                 width: '150',
             }],
@@ -107,8 +132,37 @@
 		},
         created () {
             this.getList()
+            this.getResourceList()
         },
 		methods: {
+			handleRoleResourceAdd(roleObj) {
+				var _this = this;
+					
+				axios.post(_this.baseUrl + '/v1/rbac/roleresourcerel/selectresourceidsbyroleid', "roleObj="+ JSON.stringify({roleId: roleObj.id}),{
+			        headers: {
+			        	'Content-Type': 'application/x-www-form-urlencoded'
+			        }
+			    }
+    			)
+				.then(function(res){
+					console.log(res);
+					if(res.data.code == '200') {
+					  	console.log(res.data)
+					  	_this.dialogUserResourceFormVisible = true;
+					  	Vue.set(_this, 'userResourceKeysArray', []);
+					  	Vue.set(_this, 'userResourceKeysArray', res.data.list);
+					  	_this.selectedRoleId = roleObj.id;
+					  	_this.$refs.userResourceTree.setCheckedKeys([]);
+						_this.$refs.userResourceTree.setCheckedKeys(res.data.list);
+					} else {
+					  	_this.$message(res.data.data);
+					}
+				})
+				.catch(function(err){
+					console.log(err);
+				});
+					
+			},
 			// 行 操作按钮的处理
             rowClick(data, event, index, text) {
                 console.log('当前行数据:' + data)
@@ -121,9 +175,13 @@
                 if(text == '删除') {
                 	this.handleDelete(data.id);
                 }
+                if(text == '资源维护') {
+                	this.handleRoleResourceAdd(data);
+                }
             },
             selectionClick(arr) {
                 console.log('选中数据id数组:' + arr)
+                this.treeGridSelectedArray = arr;
             },
             sortClick(key, type) {
                 console.log('排序字段:' + key)
@@ -169,6 +227,17 @@
 				.then(function(res){
 				  console.log(res);
 				  _this.data = res.data;
+				})
+				.catch(function(err){
+				  console.log(err);
+				});
+            },
+            getResourceList() {
+            	var _this = this;
+            	axios.get(_this.baseUrl + '/v1/rbac/resource/treejson')
+				.then(function(res){
+				  console.log(res);
+				  _this.dataResourceDatas = res.data;
 				})
 				.catch(function(err){
 				  console.log(err);
@@ -225,7 +294,31 @@
 					  console.log(err);
 					});
         		}
-            }
+			},
+			dialogUpdateRoleResourceClick() {
+   				var _this = this
+		        var checkedResourceKeys = this.$refs.userResourceTree.getCheckedKeys()
+		        console.log(checkedResourceKeys)
+				axios.post(_this.baseUrl + '/v1/rbac/roleresourcerel/saverels', "saveRelsObj="+ JSON.stringify({roleId: _this.selectedRoleId, resourceIds: checkedResourceKeys}),{
+			        headers: {
+			        	'Content-Type': 'application/x-www-form-urlencoded'
+			        }
+			    }
+    			)
+				.then(function(res){
+					console.log(res);
+					if(res.data.code == '200') {
+					  	console.log(res.data)
+					  	_this.$message(res.data.data);
+					  	_this.dialogUserResourceFormVisible = false;
+					} else {
+					  	_this.$message(res.data.data);
+					}
+				})
+				.catch(function(err){
+					console.log(err);
+				});
+			}
         }
 	})
 </script>

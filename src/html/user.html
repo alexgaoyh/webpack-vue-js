@@ -20,18 +20,122 @@
 </head>
 <body>
 	<div id="app">
-		<PapRbacUser :base-url="baseUrl"></PapRbacUser>
+		<PapRbacUser :base-url="baseUrl" :oper-action-props="operActionProps" @on-outer-click='onOuterClick'></PapRbacUser>
+		
+	    <el-dialog :title="dialogUserRoleTitle" :visible.sync="dialogUserRoleFormVisible">
+			<el-tree :data="dataUserRoleDatas" show-checkbox node-key="id" :default-expanded-keys="userRoleKeysArray"
+			       :default-checked-keys="userRoleKeysArray" ref="userRoleTree" highlight-current
+			:props="userRoleTreeProps"></el-tree>
+			<div slot="footer" class="dialog-footer">
+				<el-button @click="dialogUserRoleFormVisible = false">取 消</el-button>
+				<el-button type="primary" @click="dialogUpdateUserRoleClick()">确 定</el-button>
+			</div>
+		</el-dialog>
 	</div>
 </body>
 <!-- 先引入 Vue -->
 <script src="https://cdn.bootcss.com/vue/2.5.9/vue.js"></script>
+<!-- 引入组件库 -->
+<script src="https://cdn.bootcss.com/element-ui/2.0.7/index.js"></script>
+<script src="https://cdn.bootcss.com/axios/0.18.0/axios.min.js"></script>
 <script src="../js/app/rbac/pap-rbac-user.min.js"></script>
 <script>
 	Vue.use(window.PapRbacUser)
 	new Vue({
 		el: '#app',
 		data: {
-			baseUrl: 'http://127.0.0.1:28762'
+			baseUrl: 'http://127.0.0.1:28762',
+			operActionProps: [{
+                type: 'primary',
+                text: '角色配置'
+            }],
+            userRoleTreeProps: {
+				children: 'children',
+				label: 'name'
+		    },
+	        dataUserRoleDatas: [],
+	        userRoleKeysArray: [],
+	        selectedUserId: '',
+	        dialogUserRoleTitle: '用户角色维护',
+	        dialogUserRoleFormVisible: false
+		},
+        created () {
+            this.getRoleList()
+        },
+		methods: {
+			// 行 操作按钮的处理
+            onOuterClick(tableSelectedData, type,  text) {
+                console.log('当前选中数据:' + tableSelectedData)
+                console.log('点击类型:' + type)
+                console.log('点击文本:' + text)
+                if(tableSelectedData && tableSelectedData.length ==1) {
+                	this.handleUserRole(tableSelectedData[0]);
+                } else {
+                	this.$message("请选择一条用户信息进行角色维护!");
+                }
+            },
+			getRoleList () {
+				var _this = this;
+				axios.get(_this.baseUrl + '/v1/rbac/role/treejson')
+				.then(function(res){
+				  console.log(res);
+				  _this.dataUserRoleDatas = res.data;
+				})
+				.catch(function(err){
+				  console.log(err);
+				});
+			},
+            handleUserRole(userObj) {
+            	var _this = this;
+            	console.log(userObj);
+    			axios.post(_this.baseUrl + '/v1/rbac/userrolerel/selectroleidsbyuserid', "userObj="+ JSON.stringify({userId: userObj.id}),{
+			        headers: {
+			        	'Content-Type': 'application/x-www-form-urlencoded'
+			        }
+			    }
+    			)
+				.then(function(res){
+					console.log(res);
+					if(res.data.code == '200') {
+					  	console.log(res.data)
+					  	_this.dialogUserRoleFormVisible = true;
+					  	Vue.set(_this, 'userRoleKeysArray', []);
+					  	Vue.set(_this, 'userRoleKeysArray', res.data.list);
+					  	_this.selectedUserId = userObj.id;
+					  	_this.$refs.userRoleTree.setCheckedKeys([])
+						_this.$refs.userRoleTree.setCheckedKeys(res.data.list)
+					} else {
+					  	_this.$message(res.data.data);
+					}
+				})
+				.catch(function(err){
+					console.log(err);
+				});
+			},
+			dialogUpdateUserRoleClick() {
+	        	var _this = this
+		        var checkedRoleKeys = this.$refs.userRoleTree.getCheckedKeys()
+		        console.log(checkedRoleKeys)
+				axios.post(_this.baseUrl + '/v1/rbac/userrolerel/saverels', "saveRelsObj="+ JSON.stringify({userId: _this.selectedUserId, roleIds: checkedRoleKeys}),{
+			        headers: {
+			        	'Content-Type': 'application/x-www-form-urlencoded'
+			        }
+			    }
+    			)
+				.then(function(res){
+					console.log(res);
+					if(res.data.code == '200') {
+					  	console.log(res.data)
+					  	_this.$message(res.data.data);
+					  	_this.dialogUserRoleFormVisible = false;
+					} else {
+					  	_this.$message(res.data.data);
+					}
+				})
+				.catch(function(err){
+					console.log(err);
+				});
+			}
 		}
 	})
 </script>
