@@ -37,7 +37,7 @@ let webpackConfig = {
       },
       {
         test: /\.(eot|svg|ttf|woff|woff2)(\?\S*)?$/,
-        loader: 'file-loader'
+        loader: 'url-loader?limit=1000000'
       }
     ]
   }
