@@ -7,9 +7,9 @@
             <el-button class="filter-item" style="margin-left: 10px;"type="primary" icon="search" @click="handleAdd">添加</el-button>
             <el-button class="filter-item" style="margin-left: 10px;"type="primary" icon="search" @click="handleUpdate">修改</el-button>
             <el-button class="filter-item" style="margin-left: 10px;"type="primary" icon="search" @click="handleDelete">删除</el-button>
-            <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="edit" @click="handleRoleEdit">
-                角色配置
-            </el-button>
+            <el-button class="filter-item" style="margin-left: 10px;" :type="action.type" icon="search"
+                       @click="operActionClick(action.type, action.text)" v-for='action in operActionProps'
+                       :key="action.text">{{action.text}}</el-button>
         </div>
 
         <v-table
@@ -79,7 +79,8 @@
             baseUrl: {
                 type: String,
                 default: ''
-            }
+            },
+            operActionProps: Array
         },
         data () {
             return {
@@ -113,6 +114,9 @@
             this.getList()
         },
         methods: {
+            operActionClick(type, text) {
+                this.$emit('on-outer-click', this.tableSelectedData, type, text)
+            },
             handleAdd () {
                 this.temp = {};
                 this.$modal.show('userModal');

@@ -52,14 +52,14 @@ webpackConfig.externals = {
 }
 module.exports = [
     merge(webpackConfig, {
-        entry: path.resolve('./src/pap-tree-grid.js'),
+        entry: path.resolve('./src/pap-rbac-user.js'),
         devServer: {
             contentBase: path.join(__dirname, "dist")
         },
         output: {
-            filename: 'pap-tree-grid.min.js',
+            filename: 'pap-rbac-user.min.js',
             libraryTarget: 'window',
-            library: 'PapTreeGrid',
+            library: 'PapRbacUser',
         }
     })
 ]
