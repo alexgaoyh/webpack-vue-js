@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<!-- 引入样式 -->
+	<link rel="stylesheet"
+		  href="https://cdn.bootcss.com/element-ui/2.0.6/theme-chalk/index.css">
+</head>
+<body>
+<div id="app">
+	<!-- 搜索相关 -->
+	<div class="filter-container" style="margin-bottom: 10px;">
+		<el-button class="filter-item" style="margin-left: 10px;"type="primary" icon="search" @click="handleAdd">添加</el-button>
+	</div>
+
+	<!-- 树形表格 -->
+	<tree-grid
+			:items='data'
+			:columns='columns'
+			@on-row-click='rowClick'
+			@on-selection-change='selectionClick'
+			@on-sort-change='sortClick'
+	></tree-grid>
+
+	<!-- 维护角色 -->
+	<el-dialog :title="dialogTitle" :visible.sync="dialogFormVisible">
+		<el-form class="small-space" :model="temp"  label-position="left" label-width="80px">
+			<el-input type="hidden" v-model="temp._scopeIndex"></el-input>
+			<el-form-item label="编号">
+				<el-input placeholder="请输入内容" v-model="temp.code" v-bind:readonly="dialogTitle=='信息查看'">
+				</el-input>
+			</el-form-item>
+			<el-form-item label="名称">
+				<el-input placeholder="请输入内容" v-model="temp.name" v-bind:readonly="dialogTitle=='信息查看'">
+				</el-input>
+			</el-form-item>
+			<el-form-item label="上级角色">
+				<el-cascader v-model="parentRoleArrayTemp" placeholder="请选择" :options="data"
+							 filterable clearable change-on-select style="width: 511.5px"
+							 :props="papbusRolecascaderprops" v-bind:readonly="dialogTitle=='信息查看'"></el-cascader>
+			</el-form-item>
+			<el-form-item label="备注">
+				<el-input placeholder="请输入内容" v-model="temp.remark" v-bind:readonly="dialogTitle=='信息查看'">
+				</el-input>
+			</el-form-item>
+		</el-form>
+		<div slot="footer" class="dialog-footer">
+			<el-button @click="dialogFormVisible = false">取 消</el-button>
+			<el-button type="primary" @click="dialogSaveOrUpdateClick()">保存</el-button>
+		</div>
+	</el-dialog>
+</div>
+</body>
+<!-- 先引入 Vue -->
+<script src="https://cdn.bootcss.com/vue/2.5.9/vue.js"></script>
+<!-- 引入组件库 -->
+<script src="https://cdn.bootcss.com/element-ui/2.0.7/index.js"></script>
+<script src="https://cdn.bootcss.com/axios/0.18.0/axios.min.js"></script>
+<script src="../js/app/rbac/pap-tree-grid.min.js"></script>
+<script>
+    Vue.use(window.PapTreeGrid)
+    new Vue({
+        el: '#app',
+        data: {
+            baseUrl: 'http://127.0.0.1:28762',
+            dialogTitle: '',
+            dialogFormVisible: false,
+            temp: {},
+            parentRoleArrayTemp: [],
+            papbusRolecascaderprops: {
+                value: 'id',
+                label: 'name'
+            },
+            columns: [{
+                type: 'selection',
+                width: '50',
+            }, {
+                title: '编码',
+                key: 'code',
+                width: '150',
+                marginLeft: true
+            }, {
+                title: '名称',
+                key: 'name',
+                width: '150',
+            }, {
+                title: '备注',
+                key: 'remark',
+                width: '150',
+            }, {
+                title: '操作',
+                type: 'action',
+                actions: [{
+                    type: 'primary',
+                    text: '编辑'
+                }, {
+                    type: 'error',
+                    text: '删除'
+                }],
+                width: '150',
+            }],
+            // 初始化选中，对象增加 _checked: true 属性
+            data: []
+        },
+        created () {
+            this.getList()
+        },
+        methods: {
+            // 行 操作按钮的处理
+            rowClick(data, event, index, text) {
+                console.log('当前行数据:' + data)
+                console.log('点击事件:' + event)
+                console.log('点击行号:' + index)
+                console.log('点击文本:' + text)
+                if(text == '编辑') {
+                    this.handleUpdate(data);
+                }
+                if(text == '删除') {
+                    this.handleDelete(data.id);
+                }
+            },
+            selectionClick(arr) {
+                console.log('选中数据id数组:' + arr)
+            },
+            sortClick(key, type) {
+                console.log('排序字段:' + key)
+                console.log('排序规则:' + type)
+            },
+            handleAdd() {
+                this.parentRoleArrayTemp = [];
+                this.temp = {};
+                this.dialogFormVisible = true;
+            },
+            handleUpdate(data) {
+                this.temp = data;
+                if (data.pathIds !== undefined && data.pathIds !== null && data.pathIds !== '') {
+                    this.parentRoleArrayTemp = data.pathIds.split(',')
+                } else {
+                    this.parentRoleArrayTemp = []
+                }
+                this.dialogFormVisible = true;
+            },
+            handleDelete(deleteId) {
+                var _this = this;
+                axios.post(_this.baseUrl + '/v1/rbac/role/delete',"deleteJSON="+ JSON.stringify({id: deleteId}),{
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        }
+                    }
+                )
+                    .then(function(res){
+                        console.log(res);
+                        if(res.data.code == '200') {
+                            _this.getList();
+                        } else {
+                            _this.$message(res.data.data);
+                        }
+                    })
+                    .catch(function(err){
+                        console.log(err);
+                    });
+            },
+            getList() {
+                var _this = this;
+                axios.get(_this.baseUrl + '/v1/rbac/role/treejson')
+                    .then(function(res){
+                        console.log(res);
+                        _this.data = res.data;
+                    })
+                    .catch(function(err){
+                        console.log(err);
+                    });
+            },
+            dialogSaveOrUpdateClick() {
+                var _this = this;
+                console.log(this.parentRoleArrayTemp);
+                console.log(this.temp);
+                if (this.parentRoleArrayTemp) {
+                    if (this.parentRoleArrayTemp.length > 0) {
+                        this.temp.parentId = this.parentRoleArrayTemp[this.parentRoleArrayTemp.length - 1]
+                    } else if (this.parentRoleArrayTemp.length === 0) {
+                        this.temp.parentId = '-1'
+                    }
+                }
+
+                if(this.temp.id == undefined || this.temp.id == '') {
+                    axios.post(_this.baseUrl + '/v1/rbac/role/add',"addJSON="+ JSON.stringify(_this.temp),{
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            }
+                        }
+                    )
+                        .then(function(res){
+                            console.log(res);
+                            if(res.data.code == '200') {
+                                _this.dialogFormVisible = false;
+                                _this.getList();
+                            } else {
+                                _this.$message(res.data.data);
+                            }
+                        })
+                        .catch(function(err){
+                            console.log(err);
+                        });
+                } else {
+                    axios.post(_this.baseUrl + '/v1/rbac/role/update',"updateJSON="+ JSON.stringify(_this.temp),{
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            }
+                        }
+                    )
+                        .then(function(res){
+                            console.log(res);
+                            if(res.data.code == '200') {
+                                _this.dialogFormVisible = false;
+                                _this.getList();
+                            } else {
+                                _this.$message(res.data.data);
+                            }
+                        })
+                        .catch(function(err){
+                            console.log(err);
+                        });
+                }
+            }
+        }
+    })
+</script>
