@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<!-- 引入样式 -->
+<link rel="stylesheet"
+	href="https://cdn.bootcss.com/element-ui/2.0.6/theme-chalk/index.css">
+	<style>
+		.v-table-class{
+   			font-size: 14px;
+			font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+			height: 500px;
+			margin-top: 10px;
+			margin-bottom: 10px;
+		}
+	</style>
+</head>
+<body>
+	<div id="app">
+        <!-- 搜索相关 -->
+        <div class="filter-container">
+            <el-input @keyup.enter.native="handleFilter" style="width: 200px;" class="filter-item" placeholder="系统名称" v-model="listQuery.name" ></el-input>
+            <el-button class="filter-item" style="margin-left: 10px;"type="primary" icon="edit" @click="handleFilter">搜索</el-button>
+            <el-button class="filter-item" style="margin-left: 10px;"type="primary" icon="search" @click="handleAdd">添加</el-button>
+            <el-button class="filter-item" style="margin-left: 10px;"type="primary" icon="search" @click="handleUpdate">修改</el-button>
+            <el-button class="filter-item" style="margin-left: 10px;"type="primary" icon="search" @click="handleDelete">删除</el-button>
+        </div>
+		
+		<papBaseTable @select-all="selectAll"
+                @select-change="selectChange"
+                @select-group-change="selectGroupChange"
+                :columns="columns"
+                :table-data="tableData"
+                :page-total="listQuery.total"
+        ></papBaseTable>
+        
+    	<!-- 新增修改维护 -->
+	    <el-dialog :title="dialogTitle" :visible.sync="dialogFormVisible">
+	      <el-form class="small-space" :model="temp"  label-position="left" label-width="100px">
+	        <el-form-item label="编号">
+	          <el-input placeholder="请输入内容" v-model="temp.code" v-bind:readonly="dialogTitle=='信息查看'">
+	          </el-input>
+	        </el-form-item>
+	        <el-form-item label="名称">
+	          <el-input placeholder="请输入内容" v-model="temp.name" v-bind:readonly="dialogTitle=='信息查看'">
+	          </el-input>
+	        </el-form-item>
+	        <el-form-item label="系统管理者">
+	          <el-input placeholder="请输入内容" v-model="temp.manager" v-bind:readonly="dialogTitle=='信息查看'">
+	          </el-input>
+	        </el-form-item>
+	      </el-form>
+	      <div slot="footer" class="dialog-footer">
+	        <el-button @click="dialogFormVisible = false">取 消</el-button>
+	        <el-button type="primary" @click="dialogSaveOrUpdateClick()">保存</el-button>
+	      </div>
+	    </el-dialog>
+	</div>
+</body>
+<!-- 先引入 Vue -->
+<script src="https://cdn.bootcss.com/vue/2.5.9/vue.js"></script>
+<!-- 引入组件库 -->
+<script src="https://cdn.bootcss.com/element-ui/2.0.7/index.js"></script>
+<script src="https://cdn.bootcss.com/axios/0.18.0/axios.min.js"></script>
+<script src="../js/lib/pap-base-table.min.js"></script>
+<script>
+	Vue.use(window.PapBaseTable)
+	new Vue({
+		el: '#app',
+		data: {
+			baseUrl: 'http://127.0.0.1:28762',
+			columns: [
+				{width: 30, titleAlign: 'center',columnAlign:'center',type: 'selection',isResize:true},
+				{field: 'id', title:'编号', width: 100, titleAlign: 'center',columnAlign:'center',isResize:true},
+                {field: 'code', title:'编码', width: 100, titleAlign: 'center',columnAlign:'center',isResize:true},
+                {field: 'name', title:'系统名称', width: 300, titleAlign: 'center',columnAlign:'center',isResize:true},
+                {field: 'manager', title: '系统管理者', width: 300, titleAlign: 'center',columnAlign:'center'}
+            ],
+			tableData: [],
+			selectedTableData: [],
+            listQuery: {
+                page: 1,
+                rows: 10,
+                name: '',
+                total: 0
+            },
+            dialogTitle: '',
+            dialogFormVisible: false,
+            temp: {}
+		},
+        created () {
+        	this.getList();
+        },
+		methods: {
+            getList() {
+            	var _this = this;
+            	axios.post(_this.baseUrl + '/v1/rbac/dataproject/querypage', "queryJSON="+JSON.stringify(_this.listQuery)+"&pageJSON="+JSON.stringify(_this.listQuery)+"" )
+				.then(function(res){
+				  console.log(res);
+				  if(res.data.code == '200') {
+				  	_this.tableData = res.data.list;
+				  	_this.listQuery.total = res.data.page.total;
+				  }
+				  
+				})
+				.catch(function(err){
+				  console.log(err);
+				});
+            },
+            handleFilter() {
+            	this.getList();
+            },
+            handleAdd() {
+            	this.temp = {};
+            	this.dialogFormVisible = true;
+            },
+            handleUpdate() {
+            	var _this = this;
+            	if(this.selectedTableData && this.selectedTableData.length == 1) {
+            		this.temp = this.selectedTableData[0];
+            		this.dialogFormVisible = true;
+            	} else {
+            		_this.$message('请选择一条记录');
+            	}
+            },
+            handleDelete() {
+            	var _this = this;
+            	if(this.selectedTableData && this.selectedTableData.length == 1) {
+            		axios.post(_this.baseUrl + '/v1/rbac/dataproject/delete', "deleteJSON="+JSON.stringify(_this.selectedTableData[0]) )
+					.then(function(res){
+						console.log(res);
+						if(res.data.code == '200') {
+                            _this.getList()
+						}
+					})
+					.catch(function(err){
+						console.log(err);
+					});
+            	} else {
+            		_this.$message('请选择一条记录');
+            	}
+            },
+            selectAll(selection){
+            	this.selectedTableData = selection;
+            },
+            selectChange(selection,rowData){
+            	this.selectedTableData = selection;
+            },
+            selectGroupChange(selection){
+            	this.selectedTableData = selection;
+            },
+            pageChange(pageIndex){
+            	this.listQuery.page = pageIndex;
+            	this.getList();
+            },
+            pageSizeChange(pageSize){
+            	this.listQuery.rows = pageSize;
+            	this.getList();
+            },
+            dialogSaveOrUpdateClick() {
+            	var _this = this;
+                if(this.temp && this.temp.id != undefined && this.temp.id != '') {
+					axios.post(_this.baseUrl + '/v1/rbac/dataproject/update', "updateJSON="+JSON.stringify(_this.temp) )
+					.then(function(res){
+						console.log(res);
+						if(res.data.code == '200') {
+							_this.dialogFormVisible = false;
+                            _this.getList();
+                            _this.selectedTableData = [];
+						}
+					})
+					.catch(function(err){
+						console.log(err);
+					});
+                } else {
+					axios.post(_this.baseUrl + '/v1/rbac/dataproject/add', "addJSON="+JSON.stringify(_this.temp) )
+					.then(function(res){
+						console.log(res);
+						if(res.data.code == '200') {
+							_this.dialogFormVisible = false;
+                            _this.getList()
+						}
+					})
+					.catch(function(err){
+						console.log(err);
+					});
+                }
+            }
+		}
+	})
+</script>
