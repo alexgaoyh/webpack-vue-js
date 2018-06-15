@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<!-- 引入样式 -->
+<link rel="stylesheet"
+	href="https://cdn.bootcss.com/element-ui/2.0.6/theme-chalk/index.css">
+	<style>
+		.v-table-class{
+   			font-size: 14px;
+			font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+			height: 500px;
+			margin-top: 10px;
+			margin-bottom: 10px;
+		}
+	</style>
+</head>
+<body>
+	<div id="app">
+        <!-- 搜索相关 -->
+        <div class="filter-container">
+			<el-select v-model="listQuery.userId" clearable placeholder="请选择">
+				<el-option v-for="item in userData" :key="item.id" :label="item.name" :value="item.id"></el-option>
+			</el-select>
+            <el-button class="filter-item" style="margin-left: 10px;"type="primary" icon="edit" @click="handleFilter">搜索</el-button>
+            <el-button class="filter-item" style="margin-left: 10px;"type="primary" icon="search" @click="handleAdd">添加</el-button>
+            <el-button class="filter-item" style="margin-left: 10px;"type="primary" icon="search" @click="handleUpdate">修改</el-button>
+            <el-button class="filter-item" style="margin-left: 10px;"type="primary" icon="search" @click="handleDelete">删除</el-button>
+        </div>
+		
+		<papBaseTable @select-all="selectAll"
+                @select-change="selectChange"
+                @select-group-change="selectGroupChange"
+                @page-change="pageChange"
+                @page-size-change="pageSizeChange"
+                :columns="columns"
+                :table-data="tableData"
+                :page-total="listQuery.total"
+                :pap-page-size-option="papPageSizeOption"
+                :pap-page-size="papPageSize"
+        ></papBaseTable>
+        
+    	<!-- 新增修改维护 -->
+	    <el-dialog :title="dialogTitle" :visible.sync="dialogFormVisible">
+	      <el-form class="small-space" :model="temp"  label-position="left" label-width="100px">
+	        <el-form-item label="所属用户">
+				<el-select v-model="temp.userId" placeholder="请选择" v-bind:disabled="dialogTitle=='信息查看'">
+					<el-option v-for="item in userData" :key="item.id" :label="item.name" :value="item.id"></el-option>
+				</el-select>
+	        </el-form-item>
+	        <el-form-item label="属性键">
+	          <el-input placeholder="请输入内容" v-model="temp.propKey" v-bind:readonly="dialogTitle=='信息查看'">
+	          </el-input>
+	        </el-form-item>
+	        <el-form-item label="属性操作符">
+				<el-select v-model="temp.propOper" placeholder="请选择" v-bind:disabled="dialogTitle=='信息查看'">
+					<el-option v-for="item in keyOperationValueEnumOption" :key="item.key" :label="item.value" :value="item.key"></el-option>
+				</el-select>
+	        </el-form-item>
+	        <el-form-item label="属性值">
+	          <el-input placeholder="请输入内容" v-model="temp.propValue" v-bind:readonly="dialogTitle=='信息查看'">
+	          </el-input>
+	        </el-form-item>
+	      </el-form>
+	      <div slot="footer" class="dialog-footer">
+	        <el-button @click="dialogFormVisible = false">取 消</el-button>
+	        <el-button type="primary" @click="dialogSaveOrUpdateClick()">保存</el-button>
+	      </div>
+	    </el-dialog>
+	</div>
+</body>
+<!-- 先引入 Vue -->
+<script src="https://cdn.bootcss.com/vue/2.5.9/vue.js"></script>
+<!-- 引入组件库 -->
+<script src="https://cdn.bootcss.com/element-ui/2.0.7/index.js"></script>
+<script src="https://cdn.bootcss.com/axios/0.18.0/axios.min.js"></script>
+<script src="../js/lib/pap-base-table.min.js"></script>
+<script>
+	Vue.use(window.PapBaseTable)
+	new Vue({
+		el: '#app',
+		data: {
+			baseUrl: 'http://127.0.0.1:28762',
+			userData: [],
+			keyOperationValueEnumOption: [],
+			papPageSize: 10,
+			papPageSizeOption: [10, 20, 30, 50, 100],
+			columns: [
+				{width: 30, titleAlign: 'center',columnAlign:'center',type: 'selection',isResize:true},
+				{field: 'id', title:'编号', width: 150, titleAlign: 'center',columnAlign:'center',isResize:true},
+                {field: 'userId', title:'所属用户', width: 300, titleAlign: 'center',columnAlign:'center',isResize:true},
+                {field: 'propKey', title:'属性键', width: 300, titleAlign: 'center',columnAlign:'center',isResize:true},
+                {field: 'propOper', title:'属性操作符', width: 300, titleAlign: 'center',columnAlign:'center',isResize:true},
+                {field: 'propValue', title: '属性值', width: 300, titleAlign: 'center',columnAlign:'center'}
+            ],
+			tableData: [],
+			selectedTableData: [],
+            listQuery: {
+                page: 1,
+                rows: 10,
+                name: '',
+                total: 0
+            },
+            dialogTitle: '',
+            dialogFormVisible: false,
+            temp: {}
+		},
+        created () {
+        	if(this.papPageSize) {
+        		this.listQuery.rows = this.papPageSize 
+        	}
+        	this.getList();
+        	this.getUserList();
+        	this.getKeyOperationValueEnumOption();
+        },
+		methods: {
+			getKeyOperationValueEnumOption() {
+            	var _this = this;
+            	axios.get(_this.baseUrl + '/v1/rbac/user/enums?clazzStr=com.pap.obj.vo.business.KeyOperationValueEnum' )
+				.then(function(res){
+				  console.log(res);
+				  if(res.data.code == '200') {
+				  	_this.keyOperationValueEnumOption = res.data.list;
+				  }
+				  
+				})
+				.catch(function(err){
+				  console.log(err);
+				});
+			},
+            getUserList() {
+            	var _this = this;
+            	axios.post(_this.baseUrl + '/v1/rbac/user/querypage', "queryJSON="+JSON.stringify(_this.listQuery)+"&pageJSON="+JSON.stringify(_this.listQuery)+"" )
+				.then(function(res){
+				  console.log(res);
+				  if(res.data.code == '200') {
+				  	_this.userData = res.data.list;
+				  }
+				  
+				})
+				.catch(function(err){
+				  console.log(err);
+				});
+            },
+            getList() {
+            	var _this = this;
+            	axios.post(_this.baseUrl + '/v1/rbac/userextraprop/querypage', "queryJSON="+JSON.stringify(_this.listQuery)+"&pageJSON="+JSON.stringify(_this.listQuery)+"" )
+				.then(function(res){
+				  console.log(res);
+				  if(res.data.code == '200') {
+				  	_this.tableData = res.data.list;
+				  	_this.listQuery.total = res.data.page.total;
+				  }
+				  
+				})
+				.catch(function(err){
+				  console.log(err);
+				});
+            },
+            handleFilter() {
+            	this.getList();
+            },
+            handleAdd() {
+            	this.temp = {};
+            	this.dialogFormVisible = true;
+            },
+            handleUpdate() {
+            	var _this = this;
+            	if(this.selectedTableData && this.selectedTableData.length == 1) {
+            		this.temp = this.deepCopy(this.selectedTableData[0]);
+            		this.dialogFormVisible = true;
+            	} else {
+            		_this.$message('请选择一条记录');
+            	}
+            },
+            handleDelete() {
+            	var _this = this;
+            	if(this.selectedTableData && this.selectedTableData.length == 1) {
+            		axios.post(_this.baseUrl + '/v1/rbac/userextraprop/delete', "deleteJSON="+JSON.stringify(_this.selectedTableData[0]) )
+					.then(function(res){
+						console.log(res);
+						if(res.data.code == '200') {
+                            _this.getList()
+						}
+					})
+					.catch(function(err){
+						console.log(err);
+					});
+            	} else {
+            		_this.$message('请选择一条记录');
+            	}
+            },
+            selectAll(selection){
+            	this.selectedTableData = selection;
+            },
+            selectChange(selection,rowData){
+            	this.selectedTableData = selection;
+            },
+            selectGroupChange(selection){
+            	this.selectedTableData = selection;
+            },
+            pageChange(pageIndex){
+            	this.listQuery.page = pageIndex;
+            	this.getList();
+            },
+            pageSizeChange(pageSize){
+            	this.listQuery.rows = pageSize;
+            	this.getList();
+            },
+            dialogSaveOrUpdateClick() {
+            	var _this = this;
+                if(this.temp && this.temp.id != undefined && this.temp.id != '') {
+					axios.post(_this.baseUrl + '/v1/rbac/userextraprop/update', "updateJSON="+JSON.stringify(_this.temp) )
+					.then(function(res){
+						console.log(res);
+						if(res.data.code == '200') {
+							_this.dialogFormVisible = false;
+                            _this.getList();
+                            _this.selectedTableData = [];
+						}
+					})
+					.catch(function(err){
+						console.log(err);
+					});
+                } else {
+					axios.post(_this.baseUrl + '/v1/rbac/userextraprop/add', "addJSON="+JSON.stringify(_this.temp) )
+					.then(function(res){
+						console.log(res);
+						if(res.data.code == '200') {
+							_this.dialogFormVisible = false;
+                            _this.getList()
+						}
+					})
+					.catch(function(err){
+						console.log(err);
+					});
+                }
+            },
+            deepCopy(obj){
+			    var newobj = {};
+			    for ( var attr in obj) {
+			        newobj[attr] = obj[attr];
+			    }
+			    return newobj;
+			}
+		}
+	})
+</script>
