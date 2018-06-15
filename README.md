@@ -58,4 +58,6 @@
         https://github.com/huangshuwei/vue-easytable
         http://doc.huangsw.com/vue-easytable/app.html#/intro
 
+#20180615
+    权限管理页面部分保存
 
