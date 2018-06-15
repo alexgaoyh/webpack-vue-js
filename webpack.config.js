@@ -52,14 +52,14 @@ webpackConfig.externals = {
 }
 module.exports = [
     merge(webpackConfig, {
-        entry: path.resolve('./src/pap-base-table.js'),
+        entry: path.resolve('./src/pap-rbac-user.js'),
         devServer: {
             contentBase: path.join(__dirname, "dist")
         },
         output: {
-            filename: 'pap-base-table.min.js',
+            filename: 'pap-rbac-user.min.js',
             libraryTarget: 'window',
-            library: 'PapBaseTable',
+            library: 'PapRbacUser',
         }
     })
 ]
