@@ -46,8 +46,9 @@
 	          </el-input>
 	        </el-form-item>
 	        <el-form-item label="系统编号">
-	          <el-input placeholder="请输入内容" v-model="temp.projectId" v-bind:readonly="dialogTitle=='信息查看'">
-	          </el-input>
+				<el-select v-model="temp.projectId" placeholder="请选择" v-bind:disabled="dialogTitle=='信息查看'">
+					<el-option v-for="item in projectData" :key="item.id" :label="item.name" :value="item.id"></el-option>
+				</el-select>
 	        </el-form-item>
 	        <el-form-item label="系统管理者">
 	          <el-input placeholder="请输入内容" v-model="temp.manager" v-bind:readonly="dialogTitle=='信息查看'">
@@ -73,6 +74,7 @@
 		el: '#app',
 		data: {
 			baseUrl: 'http://127.0.0.1:28762',
+			projectData: [],
 			columns: [
 				{width: 30, titleAlign: 'center',columnAlign:'center',type: 'selection',isResize:true},
 				{field: 'id', title:'编号', width: 150, titleAlign: 'center',columnAlign:'center',isResize:true},
@@ -91,12 +93,29 @@
             },
             dialogTitle: '',
             dialogFormVisible: false,
-            temp: {}
+            temp: {
+            	projectId: ''
+            }
 		},
         created () {
         	this.getList();
+        	this.getProjectList();
         },
 		methods: {
+			getProjectList() {
+				var _this = this;
+            	axios.post(_this.baseUrl + '/v1/rbac/dataproject/query', "queryJSON="+JSON.stringify({}) )
+				.then(function(res){
+				  console.log(res);
+				  if(res.data.code == '200') {
+				  	_this.projectData = res.data.list;
+				  }
+				  
+				})
+				.catch(function(err){
+				  console.log(err);
+				});
+			},
             getList() {
             	var _this = this;
             	axios.post(_this.baseUrl + '/v1/rbac/datamodule/querypage', "queryJSON="+JSON.stringify(_this.listQuery)+"&pageJSON="+JSON.stringify(_this.listQuery)+"" )
@@ -116,7 +135,9 @@
             	this.getList();
             },
             handleAdd() {
-            	this.temp = {};
+            	this.temp = {
+            		projectId: ''
+            	};
             	this.dialogFormVisible = true;
             },
             handleUpdate() {

@@ -42,16 +42,19 @@
 	          </el-input>
 	        </el-form-item>
 	        <el-form-item label="系统编号">
-	          <el-input placeholder="请输入内容" v-model="temp.projectId" v-bind:readonly="dialogTitle=='信息查看'">
-	          </el-input>
+				<el-select v-model="temp.projectId" placeholder="请选择" v-bind:disabled="dialogTitle=='信息查看'" @change="selectProjectChange">
+					<el-option v-for="item in projectData" :key="item.id" :label="item.name" :value="item.id"></el-option>
+				</el-select>
 	        </el-form-item>
 	        <el-form-item label="模块编号">
-	          <el-input placeholder="请输入内容" v-model="temp.moduleId" v-bind:readonly="dialogTitle=='信息查看'">
-	          </el-input>
+				<el-select v-model="temp.moduleId" placeholder="请选择" v-bind:disabled="dialogTitle=='信息查看'" @change="selectModuleChange">
+					<el-option v-for="item in moduleData" :key="item.id" :label="item.name" :value="item.id"></el-option>
+				</el-select>
 	        </el-form-item>
 	        <el-form-item label="所属类编号">
-	          <el-input placeholder="请输入内容" v-model="temp.clazzId" v-bind:readonly="dialogTitle=='信息查看'">
-	          </el-input>
+  				<el-select v-model="temp.clazzId" placeholder="请选择" v-bind:disabled="dialogTitle=='信息查看'">
+					<el-option v-for="item in clazzData" :key="item.id" :label="item.name" :value="item.id"></el-option>
+				</el-select>
 	        </el-form-item>
 	        <el-form-item label="属性名称">
 	          <el-input placeholder="请输入内容" v-model="temp.name" v-bind:readonly="dialogTitle=='信息查看'">
@@ -81,6 +84,9 @@
 		el: '#app',
 		data: {
 			baseUrl: 'http://127.0.0.1:28762',
+			projectData: [],
+			moduleData: [],
+			clazzData: [],
 			columns: [
 				{width: 30, titleAlign: 'center',columnAlign:'center',type: 'selection',isResize:true},
 				{field: 'id', title:'编号', width: 150, titleAlign: 'center',columnAlign:'center',isResize:true},
@@ -101,12 +107,70 @@
             },
             dialogTitle: '',
             dialogFormVisible: false,
-            temp: {}
+            temp: {            	
+            	projectId: '',
+            	moduleId: '',
+            	clazzId: ''
+        	}
 		},
         created () {
         	this.getList();
+        	this.getProjectList();
+        	this.getModuleList('');
+        	this.getClazzList('');
         },
 		methods: {
+			selectModuleChange(moduleId) {
+				this.temp.clazzId = '';
+				this.getClazzList(moduleId)
+			},
+			getClazzList(moduleId) {
+				var _this = this;
+            	axios.post(_this.baseUrl + '/v1/rbac/dataclazz/query', "queryJSON="+JSON.stringify({moduleId: moduleId}) )
+				.then(function(res){
+				  console.log(res);
+				  if(res.data.code == '200') {
+				  	_this.clazzData = res.data.list;
+				  }
+				  
+				})
+				.catch(function(err){
+				  console.log(err);
+				});
+			},
+			selectProjectChange(projectId) {
+				this.temp.moduleId = '';
+				this.temp.clazzId = '';
+				this.getModuleList(projectId)
+			},
+			getModuleList(projectId) {
+				var _this = this;
+            	axios.post(_this.baseUrl + '/v1/rbac/datamodule/query', "queryJSON="+JSON.stringify({projectId: projectId}) )
+				.then(function(res){
+				  console.log(res);
+				  if(res.data.code == '200') {
+				  	_this.moduleData = res.data.list;
+				  }
+				  
+				})
+				.catch(function(err){
+				  console.log(err);
+				});
+			},
+			getProjectList() {
+				var _this = this;
+            	axios.post(_this.baseUrl + '/v1/rbac/dataproject/query', "queryJSON="+JSON.stringify({}) )
+				.then(function(res){
+				  console.log(res);
+				  if(res.data.code == '200') {
+				  	_this.projectData = res.data.list;
+				  }
+				  
+				})
+				.catch(function(err){
+				  console.log(err);
+				});
+			},
             getList() {
             	var _this = this;
             	axios.post(_this.baseUrl + '/v1/rbac/datafield/querypage', "queryJSON="+JSON.stringify(_this.listQuery)+"&pageJSON="+JSON.stringify(_this.listQuery)+"" )
@@ -126,7 +190,11 @@
             	this.getList();
             },
             handleAdd() {
-            	this.temp = {};
+            	this.temp = {            	
+	            	projectId: '',
+	            	moduleId: '',
+	            	clazzId: ''
+	        	};
             	this.dialogFormVisible = true;
             },
             handleUpdate() {

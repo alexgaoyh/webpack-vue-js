@@ -29,9 +29,13 @@
 		<papBaseTable @select-all="selectAll"
                 @select-change="selectChange"
                 @select-group-change="selectGroupChange"
+                @page-change="pageChange"
+                @page-size-change="pageSizeChange"
                 :columns="columns"
                 :table-data="tableData"
                 :page-total="listQuery.total"
+                :pap-page-size-option="papPageSizeOption"
+                :pap-page-size="papPageSize"
         ></papBaseTable>
         
     	<!-- 新增修改维护 -->
@@ -69,6 +73,8 @@
 		el: '#app',
 		data: {
 			baseUrl: 'http://127.0.0.1:28762',
+			papPageSize: 10,
+			papPageSizeOption: [10, 20, 30, 50, 100],
 			columns: [
 				{width: 30, titleAlign: 'center',columnAlign:'center',type: 'selection',isResize:true},
 				{field: 'id', title:'编号', width: 100, titleAlign: 'center',columnAlign:'center',isResize:true},
@@ -89,6 +95,9 @@
             temp: {}
 		},
         created () {
+        	if(this.papPageSize) {
+        		this.listQuery.rows = this.papPageSize 
+        	}
         	this.getList();
         },
 		methods: {
