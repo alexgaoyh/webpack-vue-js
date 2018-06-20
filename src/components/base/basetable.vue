@@ -2,7 +2,7 @@
     <div class="app-container calendar-list-container">
         <v-table
                 columns-width-drag is-horizontal-resize is-vertical-resize
-                style="width:100%"
+                style="width:100%" column-width-drag
                 :is-loading="isLoading" :columns="columns"
                 :table-data="tableDataTemp"
                 row-hover-color="#eee" row-click-color="#edf7ff"
