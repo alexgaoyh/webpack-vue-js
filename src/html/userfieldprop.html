@@ -19,7 +19,9 @@
 	<div id="app">
         <!-- 搜索相关 -->
         <div class="filter-container">
-            <el-input @keyup.enter.native="handleFilter" style="width: 200px;" class="filter-item" placeholder="系统名称" v-model="listQuery.name" ></el-input>
+			<el-select v-model="listQuery.userId" clearable placeholder="请选择">
+				<el-option v-for="item in userData" :key="item.id" :label="item.name" :value="item.id"></el-option>
+			</el-select>
             <el-button class="filter-item" style="margin-left: 10px;"type="primary" icon="edit" @click="handleFilter">搜索</el-button>
             <el-button class="filter-item" style="margin-left: 10px;"type="primary" icon="search" @click="handleAdd">添加</el-button>
             <el-button class="filter-item" style="margin-left: 10px;"type="primary" icon="search" @click="handleUpdate">修改</el-button>
@@ -29,17 +31,22 @@
 		<papBaseTable @select-all="selectAll"
                 @select-change="selectChange"
                 @select-group-change="selectGroupChange"
+                @page-change="pageChange"
+                @page-size-change="pageSizeChange"
                 :columns="columns"
                 :table-data="tableData"
                 :page-total="listQuery.total"
+                :pap-page-size-option="papPageSizeOption"
+                :pap-page-size="papPageSize"
         ></papBaseTable>
         
     	<!-- 新增修改维护 -->
 	    <el-dialog :title="dialogTitle" :visible.sync="dialogFormVisible">
 	      <el-form class="small-space" :model="temp"  label-position="left" label-width="100px">
-	        <el-form-item label="编号">
-	          <el-input placeholder="请输入内容" v-model="temp.code" v-bind:readonly="dialogTitle=='信息查看'">
-	          </el-input>
+	        <el-form-item label="所属用户">
+				<el-select v-model="temp.userId" placeholder="请选择" v-bind:disabled="dialogTitle=='信息查看'">
+					<el-option v-for="item in userData" :key="item.id" :label="item.name" :value="item.id"></el-option>
+				</el-select>
 	        </el-form-item>
 	        <el-form-item label="系统编号">
 				<el-select v-model="temp.projectId" placeholder="请选择" v-bind:disabled="dialogTitle=='信息查看'" @change="selectProjectChange">
@@ -52,16 +59,22 @@
 				</el-select>
 	        </el-form-item>
 	        <el-form-item label="所属类编号">
-  				<el-select v-model="temp.clazzId" placeholder="请选择" v-bind:disabled="dialogTitle=='信息查看'">
+  				<el-select v-model="temp.clazzId" placeholder="请选择" v-bind:disabled="dialogTitle=='信息查看'" @change="selectClazzChange">
 					<el-option v-for="item in clazzData" :key="item.id" :label="item.name" :value="item.id"></el-option>
 				</el-select>
 	        </el-form-item>
-	        <el-form-item label="属性名称">
-	          <el-input placeholder="请输入内容" v-model="temp.name" v-bind:readonly="dialogTitle=='信息查看'">
-	          </el-input>
+			<el-form-item label="所属字段">
+				<el-select v-model="temp.fieldId" placeholder="请选择" v-bind:disabled="dialogTitle=='信息查看'">
+					<el-option v-for="item in fieldData" :key="item.id" :label="item.name" :value="item.id"></el-option>
+				</el-select>
+	        </el-form-item>
+	        <el-form-item label="属性操作符">
+				<el-select v-model="temp.propOper" placeholder="请选择" v-bind:disabled="dialogTitle=='信息查看'">
+					<el-option v-for="item in keyOperationValueEnumOption" :key="item.key" :label="item.value" :value="item.key"></el-option>
+				</el-select>
 	        </el-form-item>
 	        <el-form-item label="属性值">
-	          <el-input placeholder="请输入内容" v-model="temp.field" v-bind:readonly="dialogTitle=='信息查看'">
+	          <el-input placeholder="请输入内容" v-model="temp.propValue" v-bind:readonly="dialogTitle=='信息查看'">
 	          </el-input>
 	        </el-form-item>
 	      </el-form>
@@ -78,27 +91,29 @@
 <script src="https://cdn.bootcss.com/element-ui/2.0.7/index.js"></script>
 <script src="https://cdn.bootcss.com/axios/0.18.0/axios.min.js"></script>
 <script src="../js/lib/pap-base-table.min.js"></script>
+
 <script>
 	Vue.use(window.PapBaseTable)
 	new Vue({
 		el: '#app',
 		data: {
 			baseUrl: 'http://127.0.0.1:28762/',
+			userData: [],
 			projectData: [],
 			moduleData: [],
 			clazzData: [],
+			fieldData: [],
+			userData: [],
+			keyOperationValueEnumOption: [],
+			papPageSize: 10,
+			papPageSizeOption: [10, 20, 30, 50, 100],
 			columns: [
 				{width: 30, titleAlign: 'center',columnAlign:'center',type: 'selection',isResize:true},
 				{field: 'id', title:'编号', width: 150, titleAlign: 'center',columnAlign:'center',isResize:true},
-                {field: 'code', title:'编码', width: 100, titleAlign: 'center',columnAlign:'center',isResize:true},
-                {field: 'projectId', title:'所属系统', width: 300, titleAlign: 'center',columnAlign:'center',isResize:true},
-                {field: 'dataProjectName', title:'系统名称', width: 300, titleAlign: 'center',columnAlign:'center',isResize:true},
-                {field: 'moduleId', title:'所属模块', width: 300, titleAlign: 'center',columnAlign:'center',isResize:true},
-                {field: 'dataModuleName', title:'模块名称', width: 300, titleAlign: 'center',columnAlign:'center',isResize:true},
-                {field: 'clazzId', title:'所属类文件', width: 300, titleAlign: 'center',columnAlign:'center',isResize:true},
-                {field: 'dataClazzName', title:'所属类名称', width: 300, titleAlign: 'center',columnAlign:'center',isResize:true},
-                {field: 'name', title:'属性名称', width: 300, titleAlign: 'center',columnAlign:'center',isResize:true},
-                {field: 'field', title:'属性值', width: 300, titleAlign: 'center',columnAlign:'center'}
+                {field: 'userId', title:'所属用户', width: 300, titleAlign: 'center',columnAlign:'center',isResize:true},
+                {field: 'fieldId', title:'属性键', width: 300, titleAlign: 'center',columnAlign:'center',isResize:true},
+                {field: 'propOper', title:'属性操作符', width: 300, titleAlign: 'center',columnAlign:'center',isResize:true},
+                {field: 'propValue', title: '属性值', width: 300, titleAlign: 'center',columnAlign:'center'}
             ],
 			tableData: [],
 			selectedTableData: [],
@@ -110,19 +125,41 @@
             },
             dialogTitle: '',
             dialogFormVisible: false,
-            temp: {            	
-            	projectId: '',
-            	moduleId: '',
-            	clazzId: ''
-        	}
+            temp: {
+            	fieldId: ''
+            }
 		},
         created () {
+        	if(this.papPageSize) {
+        		this.listQuery.rows = this.papPageSize 
+        	}
         	this.getList();
+        	this.getUserList();
+        	this.getKeyOperationValueEnumOption();
         	this.getProjectList();
         	this.getModuleList('');
         	this.getClazzList('');
+        	this.getFieldList('');
         },
 		methods: {
+			selectClazzChange(fieldId) {
+				this.temp.fieldId = '';
+				this.getFieldList(fieldId)
+			},
+			getFieldList(fieldId) {
+				var _this = this;
+            	axios.post(_this.baseUrl + '/v1/rbac/datafield/query', "queryJSON="+JSON.stringify({fieldId: fieldId}) )
+				.then(function(res){
+				  console.log(res);
+				  if(res.data.code == '200') {
+				  	_this.fieldData = res.data.list;
+				  }
+				  
+				})
+				.catch(function(err){
+				  console.log(err);
+				});
+			},
 			selectModuleChange(moduleId) {
 				this.temp.clazzId = '';
 				this.getClazzList(moduleId)
@@ -144,7 +181,7 @@
 			selectProjectChange(projectId) {
 				this.temp.moduleId = '';
 				this.temp.clazzId = '';
-				this.getModuleList(projectId)
+				this.getModuleList(projectId);
 			},
 			getModuleList(projectId) {
 				var _this = this;
@@ -174,9 +211,37 @@
 				  console.log(err);
 				});
 			},
+			getKeyOperationValueEnumOption() {
+            	var _this = this;
+            	axios.get(_this.baseUrl + '/v1/rbac/user/enums?clazzStr=com.pap.obj.vo.business.KeyOperationValueEnum' )
+				.then(function(res){
+				  console.log(res);
+				  if(res.data.code == '200') {
+				  	_this.keyOperationValueEnumOption = res.data.list;
+				  }
+				  
+				})
+				.catch(function(err){
+				  console.log(err);
+				});
+			},
+            getUserList() {
+            	var _this = this;
+            	axios.post(_this.baseUrl + '/v1/rbac/user/querypage', "queryJSON="+JSON.stringify(_this.listQuery)+"&pageJSON="+JSON.stringify(_this.listQuery)+"" )
+				.then(function(res){
+				  console.log(res);
+				  if(res.data.code == '200') {
+				  	_this.userData = res.data.list;
+				  }
+				  
+				})
+				.catch(function(err){
+				  console.log(err);
+				});
+            },
             getList() {
             	var _this = this;
-            	axios.post(_this.baseUrl + '/v1/rbac/datafield/querypage', "queryJSON="+JSON.stringify(_this.listQuery)+"&pageJSON="+JSON.stringify(_this.listQuery)+"" )
+            	axios.post(_this.baseUrl + '/v1/rbac/userfieldprop/querypage', "queryJSON="+JSON.stringify(_this.listQuery)+"&pageJSON="+JSON.stringify(_this.listQuery)+"" )
 				.then(function(res){
 				  console.log(res);
 				  if(res.data.code == '200') {
@@ -193,11 +258,7 @@
             	this.getList();
             },
             handleAdd() {
-            	this.temp = {            	
-	            	projectId: '',
-	            	moduleId: '',
-	            	clazzId: ''
-	        	};
+            	this.temp = {fieldId: ''};
             	this.dialogFormVisible = true;
             },
             handleUpdate() {
@@ -212,7 +273,7 @@
             handleDelete() {
             	var _this = this;
             	if(this.selectedTableData && this.selectedTableData.length == 1) {
-            		axios.post(_this.baseUrl + '/v1/rbac/datafield/delete', "deleteJSON="+JSON.stringify(_this.selectedTableData[0]) )
+            		axios.post(_this.baseUrl + '/v1/rbac/userfieldprop/delete', "deleteJSON="+JSON.stringify(_this.selectedTableData[0]) )
 					.then(function(res){
 						console.log(res);
 						if(res.data.code == '200') {
@@ -246,7 +307,7 @@
             dialogSaveOrUpdateClick() {
             	var _this = this;
                 if(this.temp && this.temp.id != undefined && this.temp.id != '') {
-					axios.post(_this.baseUrl + '/v1/rbac/datafield/update', "updateJSON="+JSON.stringify(_this.temp) )
+					axios.post(_this.baseUrl + '/v1/rbac/userfieldprop/update', "updateJSON="+JSON.stringify(_this.temp) )
 					.then(function(res){
 						console.log(res);
 						if(res.data.code == '200') {
@@ -259,7 +320,7 @@
 						console.log(err);
 					});
                 } else {
-					axios.post(_this.baseUrl + '/v1/rbac/datafield/add', "addJSON="+JSON.stringify(_this.temp) )
+					axios.post(_this.baseUrl + '/v1/rbac/userfieldprop/add', "addJSON="+JSON.stringify(_this.temp) )
 					.then(function(res){
 						console.log(res);
 						if(res.data.code == '200') {
