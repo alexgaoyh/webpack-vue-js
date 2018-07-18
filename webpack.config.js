@@ -52,14 +52,14 @@ webpackConfig.externals = {
 }
 module.exports = [
     merge(webpackConfig, {
-        entry: path.resolve('./src/pap-rbac-user.js'),
+        entry: path.resolve('./src/pap-dynamic-table.js'),
         devServer: {
             contentBase: path.join(__dirname, "dist")
         },
         output: {
-            filename: 'pap-rbac-user.min.js',
+            filename: 'pap-dynamic-table.min.js',
             libraryTarget: 'window',
-            library: 'PapRbacUser',
+            library: 'PapDynamicTable',
         }
     })
 ]

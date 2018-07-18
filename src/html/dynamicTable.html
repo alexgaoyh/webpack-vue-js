@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<!-- 引入样式 -->
+<link rel="stylesheet" href="https://cdn.bootcss.com/element-ui/2.0.6/theme-chalk/index.css">
+</head>
+<body>
+	<div id="app">
+		<button @click="add()">添加</button>
+		<papDynamicTable :columns="columns" :table-data="tableData" 
+			@input-blur-emit="inputBlurEmit" @select-on-change-emit="selectOnChangeEmit">
+		</papDynamicTable>
+	</div>
+</body>
+<!-- 先引入 Vue -->
+<script src="https://cdn.bootcss.com/vue/2.5.9/vue.js"></script>
+<!-- 引入组件库 -->
+<script src="https://cdn.bootcss.com/element-ui/2.0.7/index.js"></script>
+
+<script src="pap-dynamic-table.min.js"></script>
+<script>
+	Vue.use(window.PapDynamicTable)
+	new Vue({
+		el: '#app',
+		data: function () {
+		    return {
+				columns: [
+					{key: 'name', label: '姓名'}, 
+					{key: 'age',  label: '年纪'},
+					{key: 'sex',  label: '性别'},
+					{key: 'sexChange', label: '性别变化'},
+					{key: 'inputChange', label: '输入框变化'}
+				],
+				tableData: [],
+				sexOptions: [
+					{value:'0', text: '男'},
+					{value:'1', text: '女'}
+				]
+		    }
+		},
+    	created () {
+	  		this.tableData.push([
+	  			{name: 'name', type:'input', value:'gao'}, 
+	  			{name: 'age', type:'input', value:'23'}, 
+	  			{name: 'sex', type:'select', value:'0', options: this.sexOptions}, 
+	  			{name: 'sexChange', type:'input', value:''}, 
+	  			{name: 'inputChange', type:'input', value:''}
+  			]);
+		},
+		methods: {
+			add() {
+				this.tableData.push([
+					{name: 'name', type:'input', value:''}, 
+					{name: 'age', type:'input', value:''}, 
+					{name: 'sex', type:'select', value:'', options: this.sexOptions}, 
+	  				{name: 'sexChange', type:'input', value:''}, 
+	  				{name: 'inputChange', type:'input', value:''}
+				]);
+			},
+			inputBlurEmit(obj){
+                console.log(obj)
+                this.tableData[obj.itemIndex][obj.columnIndex].value = obj.item[obj.columnIndex].value;
+                this.tableData[obj.itemIndex][4].value = obj.item[obj.columnIndex].value;
+			},
+			selectOnChangeEmit(obj){
+                console.log(obj)
+                this.tableData[obj.itemIndex][obj.columnIndex].value = obj.item[obj.columnIndex].value;
+                this.tableData[obj.itemIndex][3].value = obj.item[obj.columnIndex].value;
+            }
+		}
+	})
+</script>
