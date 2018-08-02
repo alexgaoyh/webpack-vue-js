@@ -30,7 +30,7 @@
             </v-pagination>
         </div>
 
-        <modal name="userModal" :height="400">
+        <modal name="userModal" :height="500">
             <el-form class="pap-rbac-user-modal small-space" :model="temp"  label-position="left" label-width="70px">
                 <el-input type="hidden" v-model="temp.id"></el-input>
                 <el-form-item label="用户编码">
