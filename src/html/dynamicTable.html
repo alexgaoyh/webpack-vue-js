@@ -7,7 +7,7 @@
 </head>
 <body>
 	<div id="app">
-		<button @click="add()">添加</button>
+		<button @click="add()">添加</button><button @click="convert()">渲染表格数据</button>
 		<papDynamicTable :columns="columns" :table-data="tableData" 
 			@input-blur-emit="inputBlurEmit" @select-on-change-emit="selectOnChangeEmit">
 		</papDynamicTable>
@@ -57,6 +57,18 @@
 	  				{name: 'sexChange', type:'input', value:''}, 
 	  				{name: 'inputChange', type:'input', value:''}
 				]);
+			},
+			convert() {
+				var convertList = [];
+				for(var idx = 0; idx < this.tableData.length; idx++) {
+					var rowArrayTemp = this.tableData[idx];
+					var objTemp = {};
+					for(var rowIdx = 0; rowIdx < rowArrayTemp.length; rowIdx++) {
+						objTemp[rowArrayTemp[rowIdx].name] = rowArrayTemp[rowIdx].value;
+					}
+					convertList.push(objTemp);
+				}
+				console.log(JSON.stringify(convertList));
 			},
 			inputBlurEmit(obj){
                 console.log(obj)
